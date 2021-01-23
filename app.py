@@ -64,7 +64,7 @@ def signup():
     db.session.add(new_user)
     db.session.commit()
     userid = new_user.id #User.query.filter_by(username=username).first().id
-    return jsonify({"user_created": True, "userid": userid})
+    return make_response(jsonify({"user_created": True, "userid": userid}))
 
 @app.route("/api/login", methods=["POST"])
 def login():
@@ -78,12 +78,12 @@ def login():
     #If the username is not in the db
     if not db_user:
         return jsonify({"status_code": 200, "login": False})
-        
+
     db_password = db_user.password
     if bcrypt.checkpw(password.encode('utf-8'), db_password.encode('utf-8')):
-        return jsonify({"status_code": 200, "userid": db_user.id, "login": True})
+        return make_response(jsonify({"status_code": 200, "userid": db_user.id, "login": True}))
     else:
-        return jsonify({"status_code": 200, "login": False})
+        return make_response(jsonify({"status_code": 200, "login": False}))
 
 @app.route("/api/get_items", methods=["POST"])#@login_required
 def get_items():
@@ -100,7 +100,7 @@ def get_items():
                 "userid": item.userid,
                 "title": item.title,
                 "value": float(item.value),
-                "category": item.category, 
+                "category": item.category,
                 "date": str(item.date)
             }
         )
@@ -120,7 +120,7 @@ def add_item():
         userid=userid,
         title=new_item["title"],
         value=new_item["value"],
-        category=new_item["category"], 
+        category=new_item["category"],
     )
     db.session.add(new_item_object)
     db.session.commit()
@@ -138,7 +138,7 @@ def delete_item():
         Item.query.filter_by(id=deleted_id).delete() #delete the item with the id provided from the db
     else:
         return make_response(jsonify({"status_code": 401}), 401)
-        
+
     db.session.commit()
     return make_response(jsonify({"status_code": 200}), 200)
 
@@ -223,12 +223,12 @@ def get_monthly_bar_totals():
 
     label_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     bar_data = {
-        "labels": label_months, 
+        "labels": label_months,
         "datasets": [
             {
                 "label": "Monthy Expendatures",
-                "backgroundColor": 'rgba(92, 207, 92, 1)', 
-                "data": data, 
+                "backgroundColor": 'rgba(92, 207, 92, 1)',
+                "data": data,
             }
         ]
     }
