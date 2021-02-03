@@ -45,19 +45,19 @@ class Item(db.Model):
         return f"Item('{self.id}', '{self.userid}', '{self.title}', '{self.value}', '{self.category}')"
 
 def check_api_key(sent_key):
-    if sent_key == API_KEY:
-        return True
-    else:
-        return False
+    return sent_key == API_KEY
 
 @app.route("/api/signup", methods=["POST"])
 def signup():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
+    sent_key = request.json.get("api_key", None)
+    if check_api_key(sent_key):
+        return make_response(jsonify({"status_code": 401}), 401)
     db_users = User.query.filter_by(username=username)
     for user in db_users:
         if user.username == username:
-            return jsonify({"user_created": False})
+            return make_response(jsonify({"user_created": False}))
 
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     new_user = User(username=username, password=hashed_password.decode('utf-8'))
@@ -70,14 +70,14 @@ def signup():
 def login():
     sent_key = request.json.get("api_key", None)
     if not check_api_key(sent_key):
-        return jsonify({"status_code": 401})
+        return make_response(jsonify({"status_code": 401}))
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     db_user = User.query.filter_by(username=username).first()
 
     #If the username is not in the db
     if not db_user:
-        return jsonify({"status_code": 200, "login": False})
+        return make_response(jsonify({"status_code": 404, "login": False}), 404)
 
     db_password = db_user.password
     if bcrypt.checkpw(password.encode('utf-8'), db_password.encode('utf-8')):
